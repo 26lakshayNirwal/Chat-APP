@@ -38,7 +38,7 @@ app.set("io", io);
 
 
 const port = process.env.PORT || 3000;
- export const envMode = (process.env.NODE_ENV || "PRODUCTION").trim();
+ export const envMode = process.env.NODE_ENV.trim() || "PRODUCTION";
 const mongoURI = process.env.MONGO_URI;
  export const adminSecretKey = process.env.ADMIN_SECRET_KEY || "lakshay";
  export const userSocketIDs = new Map();
@@ -48,7 +48,6 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
 
-// API routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/chat", chatRoute);
 app.use("/api/v1/admin", adminRoute);
@@ -60,12 +59,12 @@ const clientDistPath = path.resolve(__dirname, "../chatapp/dist");
 app.use(express.static(clientDistPath));
 
 // Health route
-app.get("/", (req, res) => {
-  res.send("hello world");
+app.get("/health", (req, res) => {
+  res.send("ok");
 });
 
-// For any other route, serve index.html (SPA fallback)
-app.get("*", (req, res) => {
+// SPA fallback: serve index.html for non-API routes
+app.get(/^(?!\/api\/).*/, (req, res) => {
   res.sendFile(path.join(clientDistPath, "index.html"));
 });
 
