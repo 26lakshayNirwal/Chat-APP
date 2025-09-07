@@ -1,0 +1,9 @@
+{
+  "name": "chatapp-root",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "npm install --prefix chatapp && npm run build --prefix chatapp && npm install --prefix server",
+    "start": "npm start --prefix server"
+  }
+}

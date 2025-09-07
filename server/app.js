@@ -16,6 +16,8 @@ import { CHAT_JOINED, CHAT_LEFT, NEW_MESSAGE, NEW_MESSAGE_ALERT, ONLINE_USERS, S
 import { getSockets } from "./lib/helper.js";
 import { Message } from "./models/message.js";
 import { socketAuthenticator } from "./middlewares/Auth.js";
+import path from "path";
+import { fileURLToPath } from "url";
 
 
 dotenv.config({ path: "./.env" });
@@ -36,7 +38,7 @@ app.set("io", io);
 
 
 const port = process.env.PORT || 3000;
- export const envMode = process.env.NODE_ENV.trim() || "PRODUCTION";
+ export const envMode = (process.env.NODE_ENV || "PRODUCTION").trim();
 const mongoURI = process.env.MONGO_URI;
  export const adminSecretKey = process.env.ADMIN_SECRET_KEY || "lakshay";
  export const userSocketIDs = new Map();
@@ -46,12 +48,25 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
 
+// API routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/chat", chatRoute);
 app.use("/api/v1/admin", adminRoute);
 
+// Serve frontend build as static files
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientDistPath = path.resolve(__dirname, "../chatapp/dist");
+app.use(express.static(clientDistPath));
+
+// Health route
 app.get("/", (req, res) => {
   res.send("hello world");
+});
+
+// For any other route, serve index.html (SPA fallback)
+app.get("*", (req, res) => {
+  res.sendFile(path.join(clientDistPath, "index.html"));
 });
 
 io.use((socket, next) => {
